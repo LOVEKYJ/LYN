@@ -30,35 +30,43 @@ public class LynController {
     }
     //用户登录
     @GetMapping("selectUserByName")
-    public void selectUserByName(@RequestParam User user){
-        if(user.getUsername()!=null&&user.getUsername()!=""&&user.getEncryptedPassword()!=null&&user.getEncryptedPassword()!=""){
-            User user1 = userMapper.selectUserByName(user.getUsername());
-            if(user1.getUsername()!=user.getUsername()){
-                System.out.printf("用户名不正确！");
-            }else if (!(user1.getEncryptedPassword().equals(user.getEncryptedPassword()))){
-                System.out.printf("密码不正确！");
-            }else {
-                System.out.printf("欢迎您，成功登录！");
-            }
+    public void selectUserByName(@RequestParam String userName,@RequestParam String userPassword) throws Exception {
+        User user = userMapper.selectUserByName(userName);
+        if(user.getEncryptedPassword().equals(userPassword)){
+            System.out.printf("欢迎您，成功登录！");
         }else {
             System.out.printf("用户名或密码错误，请重新输入！");
+            throw new Exception("用户名或密码错误，请重新输入！");
         }
     }
     //用户注销
     @PostMapping("loginOutUser")
-    public void loginOutUser(@RequestBody User user){
-        int i = userMapper.updateByPrimaryKeySelective(user);
+    public void loginOutUser(@RequestParam String userName){
+        User user = userMapper.selectUserByName(userName);
+        user.setIsDelete(true);
+        userMapper.updateByPrimaryKey(user);
     }
     //用户的基本信息
     @GetMapping("selectUserToName")
-    public User selectUserToName(@RequestParam User user){
-        User userByName = userMapper.selectUserByName(user.getUsername());
-        return userByName;
+    public User selectUserToName(@RequestParam String userName){
+        User user = userMapper.selectUserByName(userName);
+        return user;
     }
     //修改用户信息
     @PostMapping("updateUserByName")
     public void updateUserByName(@RequestBody User user){
         User userByName = userMapper.selectUserByName(user.getUsername());
+        if(user.getEncryptedPassword()!=null && !user.getEncryptedPassword().equals("")){
+            userByName.setEncryptedPassword(user.getEncryptedPassword());
+        }else if(user.getRealname()!=null && !user.getRealname().equals("")){
+            userByName.setRealname(user.getRealname());
+        }else if(user.getBirthday()!=null && !user.getBirthday().equals("")){
+            userByName.setBirthday(user.getBirthday());
+        }else if(user.getEmail()!=null && !user.getEmail().equals("")){
+            userByName.setEmail(user.getEmail());
+        }else if(user.getMobile()!=null && !user.getMobile().equals("")){
+            userByName.setMobile(user.getMobile());
+        }
         userMapper.updateByPrimaryKey(userByName);
     }
     //修改用户密码
